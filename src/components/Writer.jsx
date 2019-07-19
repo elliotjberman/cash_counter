@@ -1,10 +1,7 @@
 import React from 'react';
 import {getAllIntervals, saveInterval} from '../scripts/persistence.js';
-
-function msToHours(ms) {
-  const seconds = ms / 1000;
-  return seconds / 60 / 60;
-}
+import msToHours from '../scripts/msToHours';
+import Reader from './Reader';
 
 export default class Writer extends React.Component {
   constructor() {
@@ -18,6 +15,7 @@ export default class Writer extends React.Component {
         totalHours: this.getTotalHours()
       },
       active: false,
+      readerShowing: false
     };
     this.lastCashBlown = 0;
   }
@@ -108,20 +106,35 @@ export default class Writer extends React.Component {
       this.lastCashBlown = Math.floor(currentCashBlown);
     }
 
+    let body;
+    if (this.state.readerShowing) {
+      body = <Reader project={this.state.project} intervals={getAllIntervals()} />
+    }
+
+    else {
+      body = (
+        <div>
+          <h2>Current Run</h2>
+          <h3>Rate: ${this.state.project.rate}</h3>
+          <h3>Hours: {currentTimeBlown.toFixed(2)}</h3>
+          <h3>Cash Blown: ${this.cashBlown(currentTimeBlown).toFixed(2)}</h3>
+
+          <h2>Total</h2>
+          <h3>Total Hours: {(currentTimeBlown + this.state.project.totalHours).toFixed(2)}</h3>
+          <h3>Total Cash Blown: ${this.cashBlown(currentTimeBlown + this.state.project.totalHours).toFixed(2)}</h3>
+
+          <button className={this.state.active ? "active" : ""} onClick={this.toggleTimer.bind(this)}>{this.state.active ? "Please, make it stop!" : "Hit it!"}</button>
+        </div>
+      )
+    }
+
     return (
       <div>
+        <button className="toggle" onClick={() => {this.setState({readerShowing: !this.state.readerShowing})}}>
+          View {this.state.readerShowing ? "Realtime" : "History"}
+        </button>
         <h1>{this.state.project.name} Project</h1>
-
-        <h2>Current Run</h2>
-        <h3>Rate: ${this.state.project.rate}</h3>
-        <h3>Hours: {currentTimeBlown.toFixed(2)}</h3>
-        <h3>Cash Blown: ${this.cashBlown(currentTimeBlown).toFixed(2)}</h3>
-
-        <h2>Total</h2>
-        <h3>Total Hours: {(currentTimeBlown + this.state.project.totalHours).toFixed(2)}</h3>
-        <h3>Total Cash Blown: ${this.cashBlown(currentTimeBlown + this.state.project.totalHours).toFixed(2)}</h3>
-
-        <button className={this.state.active ? "active" : ""} onClick={this.toggleTimer.bind(this)}>{this.state.active ? "Please, make it stop!" : "Hit it!"}</button>
+        {body}
       </div>
     )
   }
