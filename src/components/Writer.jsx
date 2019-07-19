@@ -100,10 +100,10 @@ export default class Writer extends React.Component {
 
     // Jank
     const currentCashBlown = this.cashBlown(currentTimeBlown);
-    if (Math.floor(currentCashBlown) > this.lastCashBlown) {
+    if (Math.floor(currentCashBlown/10) > this.lastCashBlown) {
       const audio = new Audio('audio/nice.wav');
       audio.play();
-      this.lastCashBlown = Math.floor(currentCashBlown);
+      this.lastCashBlown = Math.floor(currentCashBlown/10);
     }
 
     let body;
