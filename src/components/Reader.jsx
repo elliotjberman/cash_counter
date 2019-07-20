@@ -28,6 +28,7 @@ function DayStamp(props) {
         return (
           <div key={interval.start}>
             <h3>${intervalCost(interval, props.rate)}</h3>
+            <h4>Description: {interval.note}</h4>
             <h4 key={interval.start}>{timestampToTime(interval.start)} - {timestampToTime(interval.end)}</h4>
           </div>
         );

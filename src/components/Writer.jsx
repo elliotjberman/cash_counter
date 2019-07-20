@@ -2,6 +2,7 @@ import React from 'react';
 import {getAllIntervals, saveInterval} from '../scripts/persistence.js';
 import msToHours from '../scripts/msToHours';
 import Reader from './Reader';
+import prompt from 'electron-prompt';
 
 export default class Writer extends React.Component {
   constructor() {
@@ -46,9 +47,16 @@ export default class Writer extends React.Component {
       return;
     }
 
-    saveInterval(this.state.interval);
-    this.endTimer();
-    this.syncSavedIntervals();
+    prompt({
+        title: 'Enter description of services rendered',
+        label: 'Notes:'
+    })
+    .then(result => {
+      saveInterval({...this.state.interval, note: result});
+      this.endTimer();
+      this.syncSavedIntervals();
+    })
+    .catch(console.error);
   }
 
   startTimer() {
@@ -88,11 +96,6 @@ export default class Writer extends React.Component {
       if (this.state.active)
         this.updateCurrentTime();
     }, 1000);
-  }
-
-  compontWillUnmount() {
-    if (this.state.active)
-      saveInterval(this.state.interval);
   }
 
   render() {
