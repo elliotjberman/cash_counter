@@ -1,8 +1,14 @@
 import React from 'react';
-import {getAllIntervals, saveInterval} from '../scripts/persistence.js';
+import {getAllIntervals, saveInterval, savePayment, getAllPayments} from '../scripts/persistence.js';
 import msToHours from '../scripts/msToHours';
 import Reader from './Reader';
 import prompt from 'electron-prompt';
+
+function formatHours(hours) {
+  let minutes = Math.floor(hours * 60 % 60);
+  if (minutes < 10) minutes = "0"+minutes;
+  return `${Math.floor(hours)}:${minutes}`;
+}
 
 export default class Writer extends React.Component {
   constructor() {
@@ -16,7 +22,8 @@ export default class Writer extends React.Component {
         totalHours: this.getTotalHours()
       },
       active: false,
-      readerShowing: false
+      readerShowing: false,
+      totalPaid: this.totalPaid()
     };
     this.lastCashBlown = 0;
   }
@@ -55,6 +62,18 @@ export default class Writer extends React.Component {
       saveInterval({...this.state.interval, note: result});
       this.endTimer();
       this.syncSavedIntervals();
+    })
+    .catch(console.error);
+  }
+
+  savePayment() {
+    prompt({
+        title: 'How much?',
+        label: 'Amount'
+    })
+    .then(amount => {
+      savePayment({timestamp: Date.now(), amount: Number(amount)});
+      this.setState({totalPaid: this.totalPaid()});
     })
     .catch(console.error);
   }
@@ -98,6 +117,13 @@ export default class Writer extends React.Component {
     }, 1000);
   }
 
+  totalPaid() {
+    const allPayments = getAllPayments();
+    return allPayments.reduce((acc, curr) => {
+      return acc + curr.amount
+    }, 0);
+  }
+
   render() {
     const currentTimeBlown = msToHours(this.state.interval.end - this.state.interval.start);
 
@@ -113,20 +139,26 @@ export default class Writer extends React.Component {
     if (this.state.readerShowing) {
       body = <Reader project={this.state.project} intervals={getAllIntervals()} />
     }
+    // if (this.state.payShowing) {
+    //   body = <Pay project={this.state.project} />
+    // }
 
     else {
       body = (
         <div>
           <h2>Current Run</h2>
           <h3>Rate: ${this.state.project.rate}</h3>
-          <h3>Hours: {currentTimeBlown.toFixed(2)}</h3>
+          <h3>Time: {formatHours(currentTimeBlown)}</h3>
           <h3>Cash Blown: ${this.cashBlown(currentTimeBlown).toFixed(2)}</h3>
 
           <h2>Total</h2>
-          <h3>Total Hours: {(currentTimeBlown + this.state.project.totalHours).toFixed(2)}</h3>
-          <h3>Total Cash Blown: ${this.cashBlown(currentTimeBlown + this.state.project.totalHours).toFixed(2)}</h3>
+          <h3>Total Time: {formatHours(currentTimeBlown + this.state.project.totalHours)}</h3>
+          <h3>Total Cash Blown: ${( this.cashBlown(currentTimeBlown + this.state.project.totalHours) - this.state.totalPaid ).toFixed(2)}</h3>
 
           <button className={this.state.active ? "active" : ""} onClick={this.toggleTimer.bind(this)}>{this.state.active ? "Please, make it stop!" : "Hit it!"}</button>
+          <br />
+          <br />
+          <button onClick={this.savePayment.bind(this)}>Make a payment</button>
         </div>
       )
     }

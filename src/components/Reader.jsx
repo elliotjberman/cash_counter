@@ -1,5 +1,4 @@
 import React from 'react';
-import {getAllIntervals} from '../scripts/persistence.js';
 import msToHours from '../scripts/msToHours';
 
 function timestampToString(timestamp) {
@@ -21,9 +20,13 @@ function DayStamp(props) {
     return acc + (interval.end-interval.start);
   }, 0)
 
+  const hours = msToHours(totalMs);
+  let minutes = Math.floor(hours%60);
+  if (minutes < 10) minutes = "0"+minutes
+
   return (
     <div>
-      <h2>{props.day} -  ${(msToHours(totalMs) * props.rate).toFixed(2)}</h2>
+      <h2>{props.day} | {Math.floor(hours)}:{minutes} - ${(hours * props.rate).toFixed(2)}</h2>
       {props.intervals.map(interval => {
         return (
           <div key={interval.start}>
