@@ -44,7 +44,7 @@ function DayStamp(props) {
 export default class Reader extends React.Component {
   render() {
     const timesheet = {};
-    const sortedIntervals = this.props.intervals.sort(interval => interval.start);
+    const sortedIntervals = this.props.intervals.sort(interval => -interval.start);
     sortedIntervals.forEach(interval => {
       const dateString = timestampToString(interval.start);
       if (timesheet[dateString] !== undefined) {

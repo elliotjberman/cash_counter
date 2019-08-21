@@ -24,7 +24,4 @@ app.on('ready', () => {
       height: 600
     }
   });
-  mb.on('ready', () => {
-    console.log("It's ready to go");
-  });
 });
